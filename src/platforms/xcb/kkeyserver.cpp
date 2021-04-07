@@ -911,7 +911,7 @@ bool codeXToSym(uchar codeX, uint modX, uint *sym)
 
 uint accelModMaskX()
 {
-    return modXShift() | modXCtrl() | modXAlt() | modXMeta();
+    return modXShift() | modXCtrl() | modXAlt() | modXMeta() | XCB_MOD_MASK_5;
 }
 
 bool xEventToQt(XEvent *e, int *keyQt)
@@ -964,29 +964,49 @@ bool xcbKeyPressEventToQt(xcb_generic_event_t *e, int *keyQt)
 
 bool xcbKeyPressEventToQt(xcb_key_press_event_t *e, int *keyQt)
 {
-    const uint16_t keyModX = e->state & (accelModMaskX() | MODE_SWITCH);
-
     xcb_key_symbols_t *symbols = xcb_key_symbols_alloc(QX11Info::connection());
+
+    bool ok = xcbKeyPressEventToQt(symbols, e, keyQt);
+
+    xcb_key_symbols_free(symbols);
+    return ok;
+}
+
+bool xcbKeyPressEventToQt(xcb_key_symbols_t *symbols, xcb_key_press_event_t *e, int *keyQt)
+{
+    const uint16_t keyModX = e->state & (accelModMaskX() | MODE_SWITCH);
 
     // We might have to use 4,5 instead of 0,1 here when mode_switch is active, just not sure how to test that.
     const xcb_keysym_t keySym0 = xcb_key_press_lookup_keysym(symbols, e, 0);
     const xcb_keysym_t keySym1 = xcb_key_press_lookup_keysym(symbols, e, 1);
+    const xcb_keysym_t keySym4 = xcb_key_press_lookup_keysym(symbols, e, 4);
+    const xcb_keysym_t keySym5 = xcb_key_press_lookup_keysym(symbols, e, 5);
     xcb_keysym_t keySymX;
+    bool metaShift = false;
 
-    if ((e->state & KKeyServer::modXNumLock()) && is_keypad_key(keySym1)) {
+    if ((e->state & KKeyServer::modXNumLock()) && (keySym1 >= XK_KP_Space && keySym1 <= XK_KP_9)) {
         if ((e->state & XCB_MOD_MASK_SHIFT)) {
             keySymX = keySym0;
         } else {
             keySymX = keySym1;
         }
     } else {
-        keySymX = keySym0;
+        if ((e->state & XCB_MOD_MASK_5)) {
+            if ((e->state & XCB_MOD_MASK_SHIFT)) {
+                keySymX = keySym5;
+                metaShift = true;
+            } else {
+                keySymX = keySym4;
+            }
+        } else {
+            keySymX = keySym0;
+        }
     }
 
     bool ok = KKeyServer::symXModXToKeyQt(keySymX, keyModX, keyQt);
 
-    if ((*keyQt & Qt::ShiftModifier) && !KKeyServer::isShiftAsModifierAllowed(*keyQt)) {
-        if (*keyQt != Qt::Key_Tab) { // KKeySequenceWidget does not map shift+tab to backtab
+    if ((*keyQt & Qt::ShiftModifier) && (!KKeyServer::isShiftAsModifierAllowed(*keyQt) || metaShift)) {
+        if (*keyQt != Qt::Key_Tab && !metaShift) { // KKeySequenceWidget does not map shift+tab to backtab
             static const int FirstLevelShift = 1;
             keySymX = xcb_key_symbols_get_keysym(symbols, e->detail, FirstLevelShift);
             KKeyServer::symXModXToKeyQt(keySymX, keyModX, keyQt);
@@ -994,7 +1014,6 @@ bool xcbKeyPressEventToQt(xcb_key_press_event_t *e, int *keyQt)
         *keyQt &= ~Qt::ShiftModifier;
     }
 
-    xcb_key_symbols_free(symbols);
     return ok;
 }
 

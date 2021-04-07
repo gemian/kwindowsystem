@@ -14,6 +14,7 @@
 #include <fixx11h.h>
 #include <kwindowsystem_export.h>
 #include <xcb/xcb.h>
+#include <xcb/xcb_keysyms.h>
 
 namespace KKeyServer
 {
@@ -182,6 +183,8 @@ KWINDOWSYSTEM_EXPORT bool xcbKeyPressEventToQt(xcb_generic_event_t *e, int *keyM
  * Overloaded method for convenience.
  */
 KWINDOWSYSTEM_EXPORT bool xcbKeyPressEventToQt(xcb_key_press_event_t *e, int *keyModQt);
+
+KWINDOWSYSTEM_EXPORT bool xcbKeyPressEventToQt(xcb_key_symbols_t *symbols, xcb_key_press_event_t *e, int *keyQt);
 
 }
 
