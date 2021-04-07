@@ -20,6 +20,7 @@ libKF5WindowSystem.so.5 libkf5windowsystem5 #MINVER#
  _ZN10KKeyServer15stringUserToModERK7QString@Base 4.96.0
  _ZN10KKeyServer15symXModXToKeyQtEjtPi@Base 5.41.0
  _ZN10KKeyServer18keyboardHasMetaKeyEv@Base 4.96.0
+ _ZN10KKeyServer20xcbKeyPressEventToQtEP14_XCBKeySymbolsP21xcb_key_press_event_tPi@Base 5.54.1
  _ZN10KKeyServer20xcbKeyPressEventToQtEP19xcb_generic_event_tPi@Base 4.96.0
  _ZN10KKeyServer20xcbKeyPressEventToQtEP21xcb_key_press_event_tPi@Base 4.96.0
  _ZN10KKeyServer24isShiftAsModifierAllowedEi@Base 4.96.0
