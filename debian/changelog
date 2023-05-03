@@ -1,4 +1,4 @@
-kwindowsystem (5.103.1+gemian) buster; urgency=medium
+kwindowsystem (5.103.1+gemian) unstable; urgency=medium
 
   * Building for Gemian
   * Adding xcbKeyPressEventToQt with option to pass in the symbols
